@@ -67,6 +67,7 @@ public class Server implements Runnable{
                 //out.print("Hi");
 
                 System.out.println(nickname+" connected!");
+                
 
                 while(in.readLine()!=null){
                     System.out.println(in.readLine());

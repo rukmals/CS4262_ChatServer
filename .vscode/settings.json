@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "d:\\Aca Sem 8\\Distributed\\Project\\DemoChatApp\\json-simple-1.1.1.jar"
+    ]
+}

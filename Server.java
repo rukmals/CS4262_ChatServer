@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 
 public class Server implements Runnable{
 
@@ -47,7 +51,7 @@ public class Server implements Runnable{
         private Socket client;
         private BufferedReader in;
         private PrintWriter out;
-        private String nickname;
+        private String newClient;
 
 
         public ConnectionHandler(Socket client){
@@ -58,24 +62,76 @@ public class Server implements Runnable{
         @Override
         public void run() {
             
-            
+            JSONParser parser = new JSONParser();
             try {
                 out = new PrintWriter(client.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                //out.println("Enter a nickname : ");
-                nickname = in.readLine();
-                //out.print("Hi");
+                newClient = in.readLine();
+                //out.println("Adel moves to MainHall-s1");
+                JSONObject clientJsonObject;
+                try {
+                    clientJsonObject = (JSONObject) parser.parse(newClient);
+                    String typeClient = (String) clientJsonObject.get("type");
+                    String identity = (String) clientJsonObject.get("identity");
 
-                System.out.println(nickname+" connected!");
+                    System.out.println(identity+" connected!");
+
+                    JSONObject newIdentify = newIdentify(identity);
+                    System.out.println(newIdentify);
+
+                } catch (ParseException e1) {
+                    //
+                }
+
                 
-
                 while(in.readLine()!=null){
-                    System.out.println(in.readLine());
+                    
+                    String reader = in.readLine();
+                    
+                    try {
+                        JSONObject jsonObject = (JSONObject) parser.parse(reader);
+                        String type = (String) jsonObject.get("type");
+                        System.out.println(type);
+
+                    } catch (ParseException e) {
+                        // TODO 
+                    }
                 }
                 
             } catch (IOException e) {
                 
             }
+        }
+
+        public boolean isAlphaNumeric(String s) {
+            return s != null && s.matches("^[a-zA-Z0-9]*$");
+        }
+
+        public boolean checkOtherServers(String identity){
+            return false;
+        }
+
+        public void broadcastRoomChange(String identity, String roomid){
+            JSONObject broadcastmessage = new JSONObject();
+            broadcastmessage.put("type", "newidentity");
+            broadcastmessage.put("identity", identity);
+            broadcastmessage.put("former", "");
+            broadcastmessage.put("roomid", roomid);
+
+
+        }
+        public JSONObject newIdentify(String identity){
+            JSONObject newIdentity = new JSONObject();
+            newIdentity.put("type", "newidentity");
+            newIdentity.put("approved", true);
+            if ((isAlphaNumeric(identity)==false) || (3>identity.length() && identity.length()>16) || (checkOtherServers(identity)==true)){
+                newIdentity.replace("approved", false);
+            }
+
+            broadcastRoomChange(identity, "MainHall-s1");
+            return newIdentity;
+            
+
         }
 
         public void sendMessage(String message){
